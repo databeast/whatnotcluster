@@ -1,6 +1,6 @@
-# Whatnot-Cluster
+# Whatnot Cluster Support
 
-Clustering support for the Whatnot Resource-locking package.
+Clustering network implementation for `github.com/databeast/whatnot`
 
 Incorporates three primary areas of functionality.
 
