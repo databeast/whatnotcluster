@@ -1,0 +1,16 @@
+syntax = "proto3";
+package transports;
+
+option go_package = "github.com/databeast/helm/transports" ;
+
+//  Inter-Node Namespace Synchronization
+service SyncService {
+  rpc Sync (stream NamespaceSync) returns (stream NamespaceSync);
+}
+
+// Synchronization Handshake to commence synchronization of a Namespace
+message NamespaceSync {
+  string AbsolutePath = 1;
+  int32  EventType = 2;
+}
+

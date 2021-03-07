@@ -1,16 +1,9 @@
 syntax = "proto3";
 package transports;
 
-option go_package = "github.com/databeast/whatnotcluster/transports" ;
+option go_package = "github.com/databeast/helm/transports" ;
 
-service StatusUpdates{
-  rpc SubscribeToEvents (Subscribe) returns (stream StateChange);
-}
-
-service LeaseService {
-  rpc RequestLease (LeaseRequest) returns (LeaseResponse);
-  rpc ReleaseLease (LeaseRelease) returns (LeaseReleaseResponse);
-}
+// Protobuf Definitions to Offer services outside of the Cluster itself
 
 
 enum EventType {
@@ -21,7 +14,31 @@ enum EventType {
   DELETE = 4 ;
 }
 
+
+// Subscribe to Updates about all events on a Path Element or optionally its sub elements too
+service StatusUpdates{
+  rpc SubscribeToEvents (Subscribe) returns (stream StateChange);
+}
+
+// Subscriptions provide updates on activities and changes made
+// to a Path Element (or its sub-elements)  nanywhere in the cluster
+message Subscribe {
+  string Absolutepath = 1;
+  bool Prefix = 2; // subscribe to sub-events from this path prefix
+}
+
+// Subscription Event indicating a change to a subscribed element
+message StateChange {
+  string AbsolutePath = 1;
+  int32  EventType = 2;
+}
+
 // Leases are locks on a resource point, with a fixed maximum lifetime
+
+service LeaseService {
+  rpc RequestLease (LeaseRequest) returns (LeaseResponse);
+  rpc ReleaseLease (LeaseRelease) returns (LeaseReleaseResponse);
+}
 
 message LeaseRequest {
   string AbsolutePath = 1;
@@ -66,15 +83,3 @@ message UnlockResponse {
 
 }
 
-// Subscriptions provide updates on activities and changes made
-// to a Path Element (or its sub-elements)  nanywhere in the cluster
-
-message Subscribe {
-  string Absolutepath = 1;
-  bool Prefix = 2; // subscribe to sub-events from this path prefix
-}
-
-message StateChange {
-  string AbsolutePath = 1;
-  int32  EventType = 2;
-}
