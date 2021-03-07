@@ -1,38 +1,80 @@
 syntax = "proto3";
 package transports;
 
-option go_package = "github.com/databeast/whatnot/cluster/transports" ;
+option go_package = "github.com/databeast/whatnotcluster/transports" ;
+
+service StatusUpdates{
+  rpc SubscribeToEvents (Subscribe) returns (stream StateChange);
+}
+
+service LeaseService {
+  rpc RequestLease (LeaseRequest) returns (LeaseResponse);
+  rpc ReleaseLease (LeaseRelease) returns (LeaseReleaseResponse);
+}
+
+
+enum EventType {
+  LEASE = 0 ;
+  LOCK = 1 ;
+  RELEASE = 2 ;
+  CREATE = 3 ;
+  DELETE = 4 ;
+}
+
+// Leases are locks on a resource point, with a fixed maximum lifetime
 
 message LeaseRequest {
-  string name = 1;
-  int64  duration = 2;  // lease time in GO unixtime integer
-  string absolutepath = 3;
+  string AbsolutePath = 1;
+  int64  Duration = 2;  // lease time in GO unixtime integer
+  bool   Prefix =3; // obtain lease on all subkeys of this path as well
 }
 
 message LeaseResponse {
-
+  string AbsolutePath = 1;
+  int64  Duration = 2;  // lease time in GO unixtime integer
+  int64  LeaseId = 3;
 }
 
 message LeaseRelease {
-
+  int64  LeaseId = 1;
 }
 
-message LockRequest {
+message LeaseReleaseResponse {
+  int64  LeaseId = 1;
+}
 
+// Locks are the basis of a Lease, they do not automatically expire and will remain locked until explicitly unlocked
+
+message LockRequest {
+  string AbsolutePath = 1;
 }
 
 message LockResponse {
-
+  string AbsolutePath = 1;
+  int64  LockId = 2;
 }
 
 message UnlockRequest {
+  int64  lockId = 1;
+  string AbsolutePath = 2;
 
 }
 
 message UnlockResponse {
+  string AbsolutePath = 1;
+  int64  LeaseId = 2;
 
 }
 
-message StateChange {
+// Subscriptions provide updates on activities and changes made
+// to a Path Element (or its sub-elements)  nanywhere in the cluster
 
+message Subscribe {
+  string Absolutepath = 1;
+  bool Prefix = 2; // subscribe to sub-events from this path prefix
+}
+
+message StateChange {
+  string AbsolutePath = 1;
+  int32  EventType = 2;
 }
